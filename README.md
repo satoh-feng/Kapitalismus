@@ -24,5 +24,5 @@ Open your browser and navigate to `http://localhost:5000` to access the graphica
 Run `python main.py` to start the backend service for querying the keyword.
 
 ## Credits
-[Spider_XHS]('https://github.com/cv-cat/Spider_XHS'): Provides the core functionality for scraping data from Xiaohongshu.
+[Spider_XHS](https://github.com/cv-cat/Spider_XHS): Provides the core functionality for scraping data from Xiaohongshu.
 
