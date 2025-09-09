@@ -1,6 +1,9 @@
+pillow
 PyExecJS
 requests
 loguru
 python-dotenv
 retry
 openpyxl
+selenium
+flask
