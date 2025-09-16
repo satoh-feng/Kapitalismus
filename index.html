@@ -1,102 +1,284 @@
 <!doctype html>
 <html lang="zh-CN">
 <head>
-  <meta charset="utf-8" />
-  <title>修改 main7.31 copy.py 的 query</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    html, body {height: 100%; margin: 0; font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial;}
-    .wrap {display:flex;align-items:center;justify-content:center;height:100%;background:#f6f7f9;}
-    .card {width:min(560px,92vw);background:#fff;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,.08);padding:24px 24px 28px;}
-    h1 {font-size:20px;margin:0 0 16px;}
-    .row {display:flex;align-items:center;gap:8px;margin:8px 0;}
-    .field {display:flex;gap:12px;margin:12px 0 6px;}
-    input[type="text"] {flex:1;font-size:16px;padding:10px 12px;border:1px solid #e5e7eb;border-radius:10px;outline:none;}
-    input[type="text"]:focus {border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.15);}
-    button {padding:10px 16px;font-size:15px;border:none;border-radius:10px;cursor:pointer;background:#111827;color:#fff;}
-    .muted {color:#6b7280;font-size:13px;margin-top:10px;word-break:break-all;}
-    .status {margin-top:14px;font-size:14px;}
-    .ok {color:#16a34a;}
-    .err {color:#dc2626;}
-    code {background:#f3f4f6;padding:2px 6px;border-radius:6px;}
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Disassembled Pixels — back to ideal</title>
+<style>
+  :root{
+    --reveal-stay-ms:5000;
+    --scatter-rotate:10deg;   /* 散落时最大倾斜 */
+    --ease: cubic-bezier(.2,.8,.1,1);
+    --tile-size:100; /* 单位：px；每块 100×100 */
+  }
+  html,body{height:100%;margin:0;background:#000;overflow:hidden;cursor:auto;}
+  /* 舞台：用 ::before 做整张背景 */
+  #stage{
+    position:fixed; inset:0; overflow:hidden;
+    isolation:isolate;           /* 分层，增强混合安全 */
+  }
+  #stage::before{
+    content:""; position:absolute; inset:0;
+    background:url("file/test.jpg") center/cover no-repeat;
+    filter:contrast(1.03) saturate(1.02);
+  }
+
+  /* 容器与单元块（真实尺寸与位置都按“正确网格”布局） */
+  .grid{ position:absolute; inset:0; }
+  .tile{
+    position:absolute; will-change:transform, opacity, filter, box-shadow;
+    background-image:url("file/test.jpg");
+    background-repeat:no-repeat;
+    transition:
+      filter 250ms var(--ease),
+      opacity 200ms linear,
+      box-shadow 300ms ease,
+      background-position 600ms var(--ease);
+    /* 初始为灰蒙效果 */
+    filter: grayscale(.85) brightness(.7) contrast(.95);
+    opacity:.9;
+    box-shadow:none;
+    z-index:2;
+  }
+  .tile.reveal{
+    filter:none;
+    opacity:1;
+    box-shadow:0 0 0 1px rgba(255,255,255,.35), 0 0 18px rgba(160,200,255,.25) inset;
+    z-index:4;
+  }
+  /* 微妙的 HUD 味道：细线网格（很淡） */
+  .hud{
+    position:absolute; inset:0; pointer-events:none; z-index:1;
+    background:
+      repeating-linear-gradient(to right, rgba(255,255,255,.03), rgba(255,255,255,.03) 1px, transparent 1px, transparent 40px),
+      repeating-linear-gradient(to bottom, rgba(255,255,255,.02), rgba(255,255,255,.02) 1px, transparent 1px, transparent 40px);
+    mask:linear-gradient(#000 20%, transparent 120%);
+  }
+
+  /* 顶层大标题容器（置于所有图层之上，水平垂直居中） */
+  #titleWrap{
+    position:fixed; inset:0; z-index:999; pointer-events:none;
+    display:flex; align-items:center; justify-content:center;
+  }
+  #titleWrap img{
+    max-width:min(72vw, 980px);
+    width:auto; height:auto;
+    filter: drop-shadow(0 6px 24px rgba(0,0,0,.45));
+  }
+
+  /* 搜索框容器（中下方） */
+  #searchBox{
+    position:fixed;
+    bottom:10vh;
+    left:50%;
+    transform:translateX(-50%);
+    text-align:center;
+    z-index:1000;
+  }
+  #searchBox label{
+    display:block;
+    font-family:Arial, sans-serif;
+    font-size:1.2rem;
+    color:#fff;
+    margin-bottom:0.5em;
+    text-shadow:0 2px 6px rgba(0,0,0,.6);
+  }
+  .row-inline { display:flex; align-items:center; gap:10px; justify-content:center; }
+  #q {
+    height: 42px; padding: 0 12px;
+    background: rgba(255,255,255,0.18);
+    color: #fff; border: 1px solid rgba(255,255,255,0.35);
+    border-radius: 10px;
+    font-size: 1rem;
+  }
+  #q::placeholder { color:#fff; opacity:.55; }
+  #save.circle-btn {
+    width: 42px; height: 42px;
+    border-radius: 50%; background: rgba(200,200,200,0.6);
+    border: none; cursor:pointer;
+  }
+  .queryRow {
+    margin-top: 0.8em;
+    font-family: Arial, sans-serif;
+    font-size: 1rem;
+    color: #ddd;
+  }
+  .queryRow span#current {
+    font-weight: bold;
+    color: #fff;
+  }
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>更新 <code>query</code>（写回 Python 文件）</h1>
-
-      <div class="row">
-        <div>当前 <code>query</code>：</div>
-        <div id="current" class="muted">读取中…</div>
+  <div id="stage">
+    <div class="hud"></div>
+    <div class="grid" id="grid"></div>
+    <div id="titleWrap"><img src="file/font1.png" alt="title" /></div>
+    <div id="searchBox">
+      <label for="searchInput">icon yourself as...</label>
+      <div class="row-inline">
+        <input id="q" type="text" placeholder="Type the keyword here" />
+        <button id="save" class="circle-btn"></button>
       </div>
-
-      <div class="field">
-        <input id="q" type="text" placeholder='例如：INTP / ESFP / "任意字符串"' />
-        <button id="save">保存</button>
-      </div>
-
-      <div class="muted">
-        将修改：<code>/Users/satoh/Desktop/Spider_XHS-master3/main7.31 copy.py</code> 中第一条形如 <code>query = "..."</code> 的行，并自动备份到
-        <code>.backups/</code>。
-      </div>
-
-      <div id="status" class="status"></div>
+      <div class="queryRow">当前 query: <span id="current">读取中…</span></div>
     </div>
   </div>
 
-  <script>
-    const currentEl = document.getElementById('current');
-    const statusEl = document.getElementById('status');
-    const inputEl = document.getElementById('q');
-    const btnEl = document.getElementById('save');
+<script>
+(function(){
+  const gridEl = document.getElementById('grid');
 
-    function setStatus(msg, ok=true) {
-      statusEl.textContent = msg;
-      statusEl.className = 'status ' + (ok ? 'ok' : 'err');
+  // 可调参数
+  const TILE = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tile-size')) || 100; // 每块尺寸
+
+  let COLS = 0;
+  let ROWS = 0;
+
+  const tiles = [];
+  let stageW, stageH, cellW, cellH;
+
+  function layout(){
+    stageW = gridEl.clientWidth;
+    stageH = gridEl.clientHeight;
+
+    COLS = Math.ceil(stageW / TILE);
+    ROWS = Math.ceil(stageH / TILE);
+
+    cellW  = Math.ceil(stageW / COLS);
+    cellH  = Math.ceil(stageH / ROWS);
+
+    // 如果已有 tile 数量与目标不一致，重建
+    const need = ROWS * COLS;
+    if(tiles.length !== need){
+      rebuildTiles();
+      return; // rebuildTiles 内部会再次调用 layout 来设置视觉属性
     }
 
-    async function loadCurrent() {
-      try {
-        const r = await fetch('/current');
-        const data = await r.json();
-        if (data.ok) {
-          currentEl.textContent = (data.query ?? '(未找到)');
-          if (data.query) inputEl.value = data.query;
-        } else {
-          currentEl.textContent = '读取失败';
-          setStatus(data.error || '无法读取当前值', false);
-        }
-      } catch (e) {
-        currentEl.textContent = '读取失败';
-        setStatus(e.message, false);
-      }
-    }
-
-    btnEl.addEventListener('click', async () => {
-      const v = inputEl.value.trim();
-      if (!v) return setStatus('请输入 query', false);
-
-      setStatus('保存中…');
-      try {
-        const r = await fetch('/update', {
-          method: 'POST',
-          headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({ query: v })
-        });
-        const data = await r.json();
-        if (data.ok) {
-          setStatus(`已保存：query = "${data.new_query}"`, true);
-          currentEl.textContent = data.new_query;
-        } else {
-          setStatus(data.error || '保存失败', false);
-        }
-      } catch (e) {
-        setStatus(e.message, false);
+    tiles.forEach(t=>{
+      t.el.style.width  = cellW + 'px';
+      t.el.style.height = cellH + 'px';
+      t.el.style.left   = (t.col*cellW) + 'px';
+      t.el.style.top    = (t.row*cellH) + 'px';
+      t.el.style.backgroundSize = `${stageW}px ${stageH}px`;
+      if(!t.isReveal){
+        setRandomBgPos(t); // 窗口变化时，保持随机片段
+      }else{
+        setCorrectBgPos(t);
       }
     });
+  }
 
-    loadCurrent();
-  </script>
+  function setCorrectBgPos(t){
+    t.el.style.backgroundPosition = `-${t.col*cellW}px -${t.row*cellH}px`;
+  }
+  function setRandomBgPos(t){
+    // 随机显示整图中任意位置的片段，保证不会越界
+    const maxX = Math.max(0, stageW - cellW);
+    const maxY = Math.max(0, stageH - cellH);
+    const rx = Math.floor(Math.random() * (maxX+1));
+    const ry = Math.floor(Math.random() * (maxY+1));
+    t.el.style.backgroundPosition = `-${rx}px -${ry}px`;
+  }
+
+  function createTiles(){
+    for(let r=0;r<ROWS;r++){
+      for(let c=0;c<COLS;c++){
+        const el = document.createElement('div');
+        el.className = 'tile';
+        gridEl.appendChild(el);
+        const item = {el, row:r, col:c, isReveal:false, timeoutId:null};
+        tiles.push(item);
+      }
+    }
+  }
+
+  function rebuildTiles(){
+    // 清空
+    tiles.splice(0, tiles.length);
+    gridEl.innerHTML = '';
+    createTiles();
+    layout();
+  }
+
+  function revealAt(row, col){
+    const idx = row*COLS + col;
+    const t = tiles[idx];
+    if(!t) return;
+
+    // 设置为正确位置 + 亮起来
+    t.isReveal = true;
+    t.el.classList.add('reveal');
+    setCorrectBgPos(t);
+
+    // 5 秒后恢复为随机片段 + 灰蒙
+    clearTimeout(t.timeoutId);
+    t.timeoutId = setTimeout(()=>{
+      t.isReveal = false;
+      t.el.classList.remove('reveal');
+      setRandomBgPos(t);
+    }, 5000);
+  }
+
+  function handleMove(e){
+    const x = (e.touches ? e.touches[0].clientX : e.clientX);
+    const y = (e.touches ? e.touches[0].clientY : e.clientY);
+    const col = Math.min(COLS-1, Math.max(0, Math.floor(x / cellW)));
+    const row = Math.min(ROWS-1, Math.max(0, Math.floor(y / cellH)));
+    revealAt(row, col);
+  }
+
+  // 初始化：按屏幕和 tile 大小自适应生成
+  layout(); // 将计算 COLS/ROWS，并在内部调用 rebuildTiles()
+
+  window.addEventListener('resize', layout, {passive:true});
+  window.addEventListener('mousemove', handleMove, {passive:true});
+  window.addEventListener('touchmove', handleMove, {passive:true});
+
+})();
+</script>
+<script>
+  const currentEl = document.getElementById('current');
+  const inputEl = document.getElementById('q');
+  const btnEl = document.getElementById('save');
+
+  async function loadCurrent() {
+    try {
+      const res = await fetch('/current');
+      if (!res.ok) throw new Error('网络错误');
+      const data = await res.json();
+      if (data && data.ok) {
+        currentEl.textContent = data.query;
+        inputEl.value = data.query;
+      } else {
+        currentEl.textContent = '无数据';
+      }
+    } catch (e) {
+      currentEl.textContent = '读取失败';
+    }
+  }
+
+  btnEl.addEventListener('click', async () => {
+    const val = inputEl.value.trim();
+    if (!val) {
+      return;
+    }
+    try {
+      const res = await fetch('/update', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({query: val}),
+      });
+      if (!res.ok) throw new Error('网络错误');
+      const data = await res.json();
+      if (data && data.ok) {
+        currentEl.textContent = data.new_query;
+        inputEl.value = '';
+      }
+    } catch (e) {
+    }
+  });
+
+  loadCurrent();
+</script>
 </body>
 </html>
