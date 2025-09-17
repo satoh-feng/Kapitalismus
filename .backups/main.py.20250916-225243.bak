@@ -32,7 +32,7 @@ if __name__ == '__main__':
     data_spider = Data_Spider()
 
     # 设置参数
-    query = "haonan"
+    query = "boston"
     query_num = 5
     sort_type_choice = 1
     note_type = 0

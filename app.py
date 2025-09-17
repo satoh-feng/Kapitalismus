@@ -6,7 +6,7 @@ from datetime import datetime
 app = Flask(__name__, static_url_path='', static_folder='.')
 
 # <<< 需要时改这里 >>>
-TARGET_FILE = r'/Users/satoh/Desktop/Spider_XHS-master3/main7.31 copy.py'
+TARGET_FILE = r'./main.py'
 BACKUP_DIR = os.path.join(os.path.dirname(TARGET_FILE), '.backups')
 
 # 更宽松的正则：匹配  query = "..."  /  query='...'

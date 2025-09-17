@@ -17,8 +17,19 @@ Key Features
 	•	Combines image recognition + text analysis + data visualization in an interdisciplinary framework.
 	•	Open-source project designed for researchers, designers, and developers to explore and extend.
 
+
 ## Interface preview
 ![img.png](doc/screenshot.png)
+
+## Demo flow
+1[img.png](doc/workflow.ipg.png)
+step 1: type the keyword & Webscraping
+![img.gif](doc/Webscraping.gif)
+![img.gif](doc/post.gif)
+
+step 2: type the keyword
+![img.gif]
+
 
 ## How to use
 ### Compile and run the project
