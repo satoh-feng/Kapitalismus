@@ -22,7 +22,7 @@ Key Features
 ![img.png](doc/screenshot.png)
 
 ## Demo flow
-1[img.png](doc/workflow.ipg.png)
+![img.png](doc/workflow.ipg.png)
 step 1: type the keyword & Webscraping
 ![img.gif](doc/Webscraping.gif)
 ![img.gif](doc/post.gif)
