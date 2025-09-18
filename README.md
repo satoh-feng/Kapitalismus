@@ -24,15 +24,15 @@ Key Features
 ## Demo flow
 ![img.png](doc/workflow.png)
 
-Step 1: type the keyword & Webscraping
-![img.gif](doc/Webscraping.gif)
+Step 1: type the keyword & Webscraping<br>
+![img.gif](doc/Webscraping.gif)<br>
 ![img.gif](doc/post.gif)
 
-Step 2: API setup
-![img.gif](doc/APIfitin.gif)
+Step 2: API setup<br>
+![img.gif](doc/APIfitin.gif)<br>
 ![img.gif](doc/APIresult.gif)
 
-Step 3: Data visualization
+Step 3: Data visualization<br>
 ![img.gif](doc/Datavisualization.gif)a
 
 ## How to use
