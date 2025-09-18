@@ -22,14 +22,18 @@ Key Features
 ![img.png](doc/screenshot.png)
 
 ## Demo flow
-![img.png](doc/workflow.ipg.png)
-step 1: type the keyword & Webscraping
+![img.png](doc/workflow.png)
+
+Step 1: type the keyword & Webscraping
 ![img.gif](doc/Webscraping.gif)
 ![img.gif](doc/post.gif)
 
-step 2: type the keyword
-![img.gif]
+Step 2: API setup
+![img.gif](doc/APIfitin.gif)
+![img.gif](doc/APIresult.gif)
 
+Step 3: Data visualization
+![img.gif](doc/Datavisualization.gif)a
 
 ## How to use
 ### Compile and run the project
